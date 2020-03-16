@@ -43,6 +43,10 @@ io.sockets.on('connection', socket => {
   socket.on('foodEaten', index => {
     food[index].x = getRndInteger(-2000, 2000);
     food[index].y = getRndInteger(-2000, 2000);
+    io.sockets.emit('heartbeat', {
+      players: Object.values(players),
+      food,
+    });
   })
 
   socket.on('disconnect', () => {

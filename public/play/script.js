@@ -34,6 +34,7 @@ function draw () {
     if (dist(player.pos.x, player.pos.y, fd.x, fd.y) < player.radius + fd.radius) {
       player.mass += fd.mass;
       player.updateRadius();
+      fd.radius=0;
       socket.emit('foodEaten', index);
     } else {
       fill(0,255,0);
