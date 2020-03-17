@@ -10,26 +10,29 @@ const server = app.listen(PORT, console.log(`Server started on port ${PORT}: htt
 
 const io = require('socket.io')(server);
 const players = {};
-let food = []
-function getRndInteger(min, max) {
-  return Math.floor(Math.random() * (max - min) ) + min;
+let food = [];
+let bullets = {};
+let mapSize = 2000
+function getRndInteger (min, max) {
+  return Math.floor(Math.random() * (max - min)) + min;
 }
 class Food {
   constructor(x, y) {
     this.mass = 2000;
     this.x = x;
     this.y = y;
-    this.radius = 25;
+    this.radius = 15;
   }
 }
-for (let i = 0; i < 50; i++) {
-  food.push(new Food(getRndInteger(-2000, 2000), getRndInteger(-2000, 2000)))
+for (let i = 0; i < 100; i++) {
+  food.push(new Food(getRndInteger(-mapSize, mapSize), getRndInteger(-mapSize, mapSize)))
 }
 setInterval(heartbeat, 33);
 function heartbeat () {
   io.sockets.emit('heartbeat', {
     players: Object.values(players),
     food,
+    bullets: Object.values(bullets).flat(),
   });
 }
 
@@ -37,8 +40,14 @@ function heartbeat () {
 io.sockets.on('connection', socket => {
   console.log('new connection ' + socket.id)
 
-  socket.on('update', data => {
+  socket.on('updatePlayer', data => {
     players[socket.id] = data;
+  })
+  socket.on('updateBullets', data => {
+    bullets[socket.id] = data.bullets;
+  })
+  socket.on('hit', bullet => {
+    io.to(`${bullet.id}`).emit('deleteBullet', bullet.bulletId)
   })
   socket.on('foodEaten', index => {
     food[index].x = getRndInteger(-2000, 2000);
@@ -48,9 +57,18 @@ io.sockets.on('connection', socket => {
       food,
     });
   })
+  socket.on('playerEaten', id => {
+    io.to(`${id}`).emit('dead', 'You died')
+    delete players[id]
+    io.sockets.emit('heartbeat', {
+      players: Object.values(players),
+      food,
+    });
+  })
 
   socket.on('disconnect', () => {
     delete players[socket.id]
+    delete bullets[socket.id]
     console.log('Client has disconnected');
   });
 });

@@ -14,13 +14,11 @@ class Player {
     this.pos.add(target)
     this.pos.x = constrain(this.pos.x, -this.map+this.radius, this.map-this.radius)
     this.pos.y = constrain(this.pos.y, -this.map+this.radius, this.map-this.radius)
+    fill(255);
+    circle(this.pos.x, this.pos.y, this.radius * 2);
   }
   updateRadius () {
     this.radius = Math.floor(Math.sqrt(this.mass / Math.PI))
   }
 
-  render () {
-    fill(255);
-    circle(this.pos.x, this.pos.y, this.radius * 2);
-  }
 }
