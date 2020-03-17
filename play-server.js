@@ -4,7 +4,7 @@ const PORT = process.env.PORT || 4000;
 const path = require('path');
 
 
-app.use(express.static(path.join(__dirname, 'public')));
+app.use(express.static(path.join(__dirname, 'public/play')));
 
 const server = app.listen(PORT, console.log(`Server started on port ${PORT}: http://localhost:${PORT}`));
 
