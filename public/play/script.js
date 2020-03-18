@@ -35,6 +35,7 @@ function setup () {
     alive = false;
   });
   socket.on('deleteBullet', bulletId => {
+    console.log(bulletId)
     myBullets = myBullets.filter(bullet => {
       return bullet.bulletId !== bulletId;
     })
@@ -122,8 +123,10 @@ function renderOtherPlayers () {
     if (plyr.id !== socket.id) {
       let playerDist = dist(player.pos.x, player.pos.y, plyr.x, plyr.y)
       if (playerDist < player.radius && player.radius > plyr.r * 1.2) {
+        console.log('omnomnom')
         socket.emit('playerEaten', plyr.id);
         player.mass += plyr.mass;
+        plyr.mass = 0;
         player.updateRadius();
       }
       fill(0, 0, 255);

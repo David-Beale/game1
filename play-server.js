@@ -13,6 +13,7 @@ const players = {};
 let food = [];
 let bullets = {};
 let usedBullets = [];
+let deadPlayers = [];
 let mapSize = 2000
 function getRndInteger (min, max) {
   return Math.floor(Math.random() * (max - min)) + min;
@@ -33,9 +34,9 @@ function playerCheck () {
       Object.values(bullets).flat().forEach((bullet, index) => {
         let d = distance(player.x, player.y, bullet.x, bullet.y)
         if (d < player.r && !usedBullets.includes(`${bullet.id}: ${bullet.bulletId}`)) {
-          usedBullets.push( `${bullet.id}: ${bullet.bulletId}`)
+          usedBullets.push(`${bullet.id}: ${bullet.bulletId}`)
           io.to(`${player.id}`).emit('hit')
-          io.to(`${bullet.id}`).emit('deleteBullet')
+          io.to(`${bullet.id}`).emit('deleteBullet', bullet.bulletId)
           bullets[bullet.id].splice(index, 1);
         }
       })
@@ -68,7 +69,7 @@ io.sockets.on('connection', socket => {
   console.log('new connection ' + socket.id)
 
   socket.on('updatePlayer', data => {
-    players[socket.id] = data;
+    if (!deadPlayers.includes(socket.id)) players[socket.id] = data;
   })
   socket.on('updateBullets', data => {
     bullets[socket.id] = data.bullets;
@@ -76,6 +77,7 @@ io.sockets.on('connection', socket => {
 
   socket.on('playerEaten', id => {
     io.to(`${id}`).emit('dead', 'You died')
+    deadPlayers.push(id)
     delete players[id]
     io.sockets.emit('heartbeat', {
       players: Object.values(players),
