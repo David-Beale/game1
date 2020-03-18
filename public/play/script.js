@@ -18,7 +18,7 @@ let mapSize = 2000
 
 
 function setup () {
-  socket = io.connect('https://db-game1.herokuapp.com/4000');
+  socket = io.connect('https://db-game1.herokuapp.com:4000');
   createCanvas(window.innerWidth, window.innerHeight);
   background(39, 43, 48)
   let camera = createVector(0, 0)
