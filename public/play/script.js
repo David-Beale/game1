@@ -13,12 +13,10 @@ let bulletCounter = 0;
 let hitByArray = [];
 let hitResetCounter = 0;
 let previousLength = 1;
-// let lives = 1;
 let mapSize = 2000
 
 
 function setup () {
-  // socket = io.connect('http://localhost:4000');
   socket = io();
   createCanvas(window.innerWidth, window.innerHeight);
   background(39, 43, 48)
@@ -26,7 +24,7 @@ function setup () {
   mouseX = width / 2;
   mouseY = height / 2;
   player = new Player(0, 0, 10000, mapSize);
-  border = new Border(-mapSize, -mapSize, mapSize*2)
+  border = new Border(-mapSize, -mapSize, mapSize * 2)
   socket.on('heartbeat', data => {
     players = data.players;
     food = data.food;
@@ -40,7 +38,24 @@ function setup () {
     myBullets = myBullets.filter(bullet => {
       return bullet.bulletId !== bulletId;
     })
+    socket.emit('updateBullets', {
+      bullets: genBulletData(),
+    });
   });
+  socket.on('foodEaten', () => {
+    if (player.mass < 50000) {
+      player.mass += 2000;
+      player.updateRadius();
+    }
+    if (ammo < 10) ammo += 0.2;
+  });
+  socket.on('hit', () => {
+    console.log('hit')
+    player.mass = Math.floor(player.mass * 0.75);
+    player.updateRadius();
+    if (player.mass < 10000) alive = false;
+  });
+
 }
 function mouseClicked () {
   if (ammo >= 1) {
@@ -73,26 +88,14 @@ function draw () {
     })
     if (allBullets && allBullets.length) {
       allBullets.forEach(bullet => {
-        let d = dist(player.pos.x, player.pos.y, bullet.x, bullet.y)
-        console.log(d)
-        if (d < player.radius && !hitByArray.includes(bullet.bulletId)) {
-          socket.emit('hit', bullet);
-          hitByArray.push(bullet.bulletId)
-          player.mass = Math.floor(player.mass * 0.75);
-          // lives = calculateLives();
-          player.updateRadius();
-          console.log('hit')
-          if (player.mass < 10000) alive = false;
-        }
         animateBullet(bullet.x, bullet.y, bullet.heading);
       })
     }
-    if (hitByArray.length) bulletReset();
+    renderFood();
     player.animate(camera)
-    foodCheck();
     renderText('Dave', 20, 'red');
     renderText(`Ammo ${Math.floor(ammo)}/10`, 13, 'blue', 20);
-    renderText(`Mass: ${player.mass/1000}`, 13, 'blue', 40);
+    renderText(`Mass: ${player.mass / 1000}`, 13, 'blue', 40);
     socket.emit('updatePlayer', {
       id: socket.id,
       x: player.pos.x,
@@ -100,38 +103,18 @@ function draw () {
       r: player.radius,
       mass: player.mass,
     });
-    let bulletData = myBullets.map(bullet => {
-      return {
-        id: socket.id,
-        x: bullet.pos.x,
-        y: bullet.pos.y,
-        heading: bullet.heading,
-        bulletId: bullet.bulletId,
-      }
-    })
     socket.emit('updateBullets', {
-      bullets: bulletData,
+      bullets: genBulletData(),
     });
   } else {
     renderText('YOU DIED', 50, 'red');
   }
 }
 
-function foodCheck () {
-  food.forEach((fd, index) => {
-    if (fd.radius>0 && dist(player.pos.x, player.pos.y, fd.x, fd.y) < player.radius + fd.radius) {
-      if (player.mass < 50000) {
-        player.mass += fd.mass;
-        // lives = calculateLives();
-        player.updateRadius();
-      }
-      if (ammo < 10) ammo += 0.2;
-      socket.emit('foodEaten', index);
-      fd.radius=0;
-    } else {
-      fill(0, 255, 0);
-      circle(fd.x, fd.y, fd.radius * 2);
-    }
+function renderFood () {
+  food.forEach((fd) => {
+    fill(0, 255, 0);
+    circle(fd.x, fd.y, fd.radius * 2);
   })
 }
 function renderOtherPlayers () {
@@ -141,7 +124,6 @@ function renderOtherPlayers () {
       if (playerDist < player.radius && player.radius > plyr.r * 1.2) {
         socket.emit('playerEaten', plyr.id);
         player.mass += plyr.mass;
-        // lives = calculateLives();
         player.updateRadius();
       }
       fill(0, 0, 255);
@@ -153,7 +135,7 @@ function renderText (name, size, color, offset = 0) {
   fill(color);
   textAlign(CENTER);
   textSize(size / scaleFactor);
-  text(name, player.pos.x, player.pos.y + offset/scaleFactor);
+  text(name, player.pos.x, player.pos.y + offset / scaleFactor);
 }
 
 function animateBullet (x, y, heading) {
@@ -164,21 +146,16 @@ function animateBullet (x, y, heading) {
   ellipse(0, 0, 35, 7);
   pop();
 }
-function bulletReset () {
-  hitResetCounter++
-  if (previousLength === hitByArray.length && hitResetCounter === 60) {
-    hitByArray = []
-    hitResetCounter = 0;
-    previousLength = 1;
-  } else if (previousLength < hitByArray.length) hitResetCounter = 0;
-  previousLength = hitByArray.length;
-};
-// function calculateLives () {
-//   let myMass = player.mass
-//   let lifeCounter = 0;
-//   while (myMass > 10000) {
-//     myMass *= 0.75
-//     lifeCounter++;
-//   }
-//   return lifeCounter
-// }
+
+function genBulletData () {
+  return myBullets.map(bullet => {
+    return {
+      id: socket.id,
+      x: bullet.pos.x,
+      y: bullet.pos.y,
+      heading: bullet.heading,
+      bulletId: bullet.bulletId,
+    }
+  })
+
+}
