@@ -18,7 +18,7 @@ let mapSize = 2000
 
 
 function setup () {
-  socket = io.connect('http://localhost:4000');
+  socket = io.connect('https://db-game1.herokuapp.com/4000');
   createCanvas(window.innerWidth, window.innerHeight);
   background(39, 43, 48)
   let camera = createVector(0, 0)
@@ -73,12 +73,14 @@ function draw () {
     if (allBullets && allBullets.length) {
       allBullets.forEach(bullet => {
         let d = dist(player.pos.x, player.pos.y, bullet.x, bullet.y)
+        console.log(d)
         if (d < player.radius && !hitByArray.includes(bullet.bulletId)) {
           socket.emit('hit', bullet);
           hitByArray.push(bullet.bulletId)
           player.mass = Math.floor(player.mass * 0.75);
           // lives = calculateLives();
           player.updateRadius();
+          console.log('hit')
           if (player.mass < 10000) alive = false;
         }
         animateBullet(bullet.x, bullet.y, bullet.heading);
