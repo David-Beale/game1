@@ -2,9 +2,15 @@ const express = require('express');
 const app = express();
 const PORT = process.env.PORT || 4000;
 const path = require('path');
+// const mongoose = require('mongoose');
 
-
+//Serve game
 app.use(express.static(path.join(__dirname, 'public/play')));
+//Connect to Mongo
+// mongoose
+//   .connect(db, { useNewUrlParser: true, useUnifiedTopology: true })
+//   .then(() => console.log('MongoDB Connected...'))
+//   .catch(e => console.log(e));
 
 const server = app.listen(PORT, console.log(`Server started on port ${PORT}: http://localhost:${PORT}`));
 
@@ -22,6 +28,7 @@ function distance (x1, y1, x2, y2) {
   return Math.floor(Math.abs(Math.sqrt(Math.pow(x2 - x1, 2) + Math.pow(y2 - y1, 2))))
 }
 function playerCheck () {
+  //food collision check
   Object.values(players).forEach(player => {
     food.forEach(fd => {
       if (distance(player.x, player.y, fd.x, fd.y) < player.r) {
@@ -30,6 +37,7 @@ function playerCheck () {
         fd.y = getRndInteger(-mapSize, mapSize);
       }
     })
+    //bullet collision check
     if (Object.values(bullets).flat().length) {
       Object.values(bullets).flat().forEach((bullet, index) => {
         let d = distance(player.x, player.y, bullet.x, bullet.y)

@@ -14,16 +14,25 @@ let hitByArray = [];
 let hitResetCounter = 0;
 let previousLength = 1;
 let mapSize = 2000
+let face;
+let name;
 
+function preload() {
+  face = loadImage('./face2.png');
+  name = 'Andre'
+  font = loadFont('./font.otf');
+
+}
 
 function setup () {
+  console.log("The URL of this page is: " + window.location.href);
   socket = io();
   createCanvas(window.innerWidth, window.innerHeight);
   background(39, 43, 48)
   let camera = createVector(0, 0)
   mouseX = width / 2;
   mouseY = height / 2;
-  player = new Player(0, 0, 10000, mapSize);
+  player = new Player(0, 0, 10000, mapSize, face);
   border = new Border(-mapSize, -mapSize, mapSize * 2)
   socket.on('heartbeat', data => {
     players = data.players;
@@ -94,9 +103,9 @@ function draw () {
     }
     renderFood();
     player.animate(camera)
-    renderText('Dave', 20, 'red');
-    renderText(`Ammo ${Math.floor(ammo)}/10`, 13, 'blue', 20);
-    renderText(`Mass: ${player.mass / 1000}`, 13, 'blue', 40);
+    renderText(name, 20, 'red',-30);
+    renderText(`Ammo ${Math.floor(ammo)}/10`, 13, 'blue', 38);
+    renderText(`Mass: ${player.mass / 1000}`, 13, 'blue', 50);
     socket.emit('updatePlayer', {
       id: socket.id,
       x: player.pos.x,
@@ -135,10 +144,17 @@ function renderOtherPlayers () {
   })
 }
 function renderText (name, size, color, offset = 0) {
+  let x = player.pos.x;
+  let y = player.pos.y + offset / scaleFactor;
+  let bbox = font.textBounds(name, x, y, size / scaleFactor);
+  fill(255);
+  rect(bbox.x, bbox.y, bbox.w, bbox.h);
+
   fill(color);
   textAlign(CENTER);
+  textFont(font);
   textSize(size / scaleFactor);
-  text(name, player.pos.x, player.pos.y + offset / scaleFactor);
+  text(name, x, y);
 }
 
 function animateBullet (x, y, heading) {
