@@ -15,9 +15,12 @@ class Player {
     this.pos.add(target)
     this.pos.x = constrain(this.pos.x, -this.map+this.radius, this.map-this.radius)
     this.pos.y = constrain(this.pos.y, -this.map+this.radius, this.map-this.radius)
-    // fill(255);
-    // circle(this.pos.x, this.pos.y, this.radius * 2);
-    image(this.face, this.pos.x-this.radius, this.pos.y-this.radius, this.radius*2, this.radius*2);
+    if(this.face){
+      image(this.face, this.pos.x-this.radius, this.pos.y-this.radius, this.radius*2, this.radius*2);
+    } else {
+      fill(255);
+      circle(this.pos.x, this.pos.y, this.radius * 2);
+    }
   }
   updateRadius () {
     this.radius = Math.floor(Math.sqrt(this.mass / Math.PI))

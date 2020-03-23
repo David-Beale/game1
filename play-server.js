@@ -2,15 +2,33 @@ const express = require('express');
 const app = express();
 const PORT = process.env.PORT || 4000;
 const path = require('path');
-// const mongoose = require('mongoose');
+const mongoose = require('mongoose');
+const User = require('./models/User');
 
 //Serve game
 app.use(express.static(path.join(__dirname, 'public/play')));
+//Get face and name
+app.get('/profile', async function (req, res) {
+  let id = req.query.a;
+  let password = req.query.b;
+  let profile = await User.findById(id, '_id name password profile ');
+  if (profile && profile.password === password) {
+    res.status(200).send(JSON.stringify(profile))
+  } else {
+    res.status(400).send()
+  }
+});
+app.get('/face', async function (req, res) {
+  let id = req.query.a;
+  let profile = await User.findById(id,'profile')
+  res.status(200).send(JSON.stringify(profile))
+});
 //Connect to Mongo
-// mongoose
-//   .connect(db, { useNewUrlParser: true, useUnifiedTopology: true })
-//   .then(() => console.log('MongoDB Connected...'))
-//   .catch(e => console.log(e));
+
+mongoose
+  .connect('mongodb+srv://admin1234:admin1234@newsfeed-ieedc.mongodb.net/test?retryWrites=true&w=majority', { useNewUrlParser: true, useUnifiedTopology: true })
+  .then(() => console.log('MongoDB Connected...'))
+  .catch(e => console.log(e));
 
 const server = app.listen(PORT, console.log(`Server started on port ${PORT}: http://localhost:${PORT}`));
 

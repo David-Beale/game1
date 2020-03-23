@@ -16,17 +16,34 @@ let previousLength = 1;
 let mapSize = 2000
 let face;
 let name;
+let faces = {};
+let profileImage;
+let dbID;
 
-function preload() {
-  face = loadImage('./face2.png');
-  name = 'Andre'
+async function preload () {
+  url = window.location.href;
+  let id = getQueryParams('a', url);
+  let pw = getQueryParams('b', url);
+  name = '';
   font = loadFont('./font.otf');
-
+  if (id && pw) {
+    await fetch(`http://localhost:4000/profile/?a=${id}&b=${pw}`)
+      .then(res => res.status < 400 ? res : Promise.reject(res))
+      .then(res => {
+        return res.json()
+      })
+      .then(data => {
+        name = data.name
+        dbID = data._id;
+        profileImage = data.profile
+      })
+  }
+  
 }
 
 function setup () {
-  console.log("The URL of this page is: " + window.location.href);
   socket = io();
+  
   createCanvas(window.innerWidth, window.innerHeight);
   background(39, 43, 48)
   let camera = createVector(0, 0)
@@ -65,6 +82,7 @@ function setup () {
     player.updateRadius();
     if (player.mass < 10000) alive = false;
   });
+  // getPlayerPic(1, "5e74da27df5b9c0fdc2d9994");
 
 }
 function mouseClicked () {
@@ -78,6 +96,10 @@ function mouseClicked () {
 }
 
 function draw () {
+  if(profileImage) {
+    player.face = loadImage(profileImage);
+    profileImage = '';
+  }
   background(255)
   camera.x = (width / 2 - player.pos.x)
   camera.y = (height / 2 - player.pos.y)
@@ -103,21 +125,23 @@ function draw () {
     }
     renderFood();
     player.animate(camera)
-    renderText(name, 20, 'red',-30);
-    renderText(`Ammo ${Math.floor(ammo)}/10`, 13, 'blue', 38);
-    renderText(`Mass: ${player.mass / 1000}`, 13, 'blue', 50);
+    renderText(name, 20, 'red', player.pos.x, player.pos.y, -30);
+    renderText(`Ammo ${Math.floor(ammo)}/10`, 13, 'blue', player.pos.x, player.pos.y, 38);
+    renderText(`Mass: ${player.mass / 1000}`, 13, 'blue', player.pos.x, player.pos.y, 50);
     socket.emit('updatePlayer', {
       id: socket.id,
       x: player.pos.x,
       y: player.pos.y,
       r: player.radius,
       mass: player.mass,
+      name,
+      dbID,
     });
     socket.emit('updateBullets', {
       bullets: genBulletData(),
     });
   } else {
-    renderText('YOU DIED', 50, 'red');
+    renderText('YOU DIED', 50, 'red', player.pos.x, player.pos.y);
   }
 }
 
@@ -138,22 +162,45 @@ function renderOtherPlayers () {
         plyr.mass = 0;
         player.updateRadius();
       }
-      fill(0, 0, 255);
-      circle(plyr.x, plyr.y, plyr.r * 2);
+      if(plyr.dbID && !faces[plyr.id]) {
+        getPlayerPic(plyr.id, plyr.dbID);
+        faces[plyr.id = 'loading']
+      }
+      if (faces[plyr.id] && faces[plyr.id] !== 'loading'){
+        image(faces[plyr.id], plyr.x-plyr.r, plyr.y-plyr.r, plyr.r*2, plyr.r*2);
+      } else {
+        fill(0, 0, 255);
+        circle(plyr.x, plyr.y, plyr.r * 2);
+      }
+      renderOtherText(plyr.name, 20, 'blue', plyr.x, plyr.y, plyr.r, -30);
     }
   })
 }
-function renderText (name, size, color, offset = 0) {
-  let x = player.pos.x;
-  let y = player.pos.y + offset / scaleFactor;
+function renderText (name, size, color, xPos, yPos, offset = 0) {
+  let x = xPos;
+  let y = yPos + offset / scaleFactor;
   let bbox = font.textBounds(name, x, y, size / scaleFactor);
   fill(255);
-  rect(bbox.x, bbox.y, bbox.w, bbox.h);
+  rect(bbox.x - 2, bbox.y, bbox.w + 4, bbox.h);
 
   fill(color);
   textAlign(CENTER);
   textFont(font);
   textSize(size / scaleFactor);
+  text(name, x, y);
+}
+function renderOtherText (name, size, color, xPos, yPos, radius, offset = 0) {
+  let newSF = scaleFactor*(player.radius/radius)
+  let x = xPos;
+  let y = yPos + offset / newSF;
+  let bbox = font.textBounds(name, x, y, size / newSF);
+  fill(255);
+  rect(bbox.x - 2, bbox.y, bbox.w + 4, bbox.h);
+
+  fill(color);
+  textAlign(CENTER);
+  textFont(font);
+  textSize(size / newSF);
   text(name, x, y);
 }
 
@@ -177,4 +224,24 @@ function genBulletData () {
     }
   })
 
+}
+function getQueryParams (params, url) {
+
+  let href = url;
+  let reg = new RegExp('[?&]' + params + '=([^&#]*)', 'i');
+  let queryString = reg.exec(href);
+  return queryString ? queryString[1] : null;
+};
+
+function getPlayerPic (socketID, dbID) {
+  fetch(`http://localhost:4000/face/?a=${dbID}`)
+  .then(res => res.status < 400 ? res : Promise.reject(res))
+  .then(res => {
+    return res.json()
+  })
+  .then(data => {
+    if (data){
+      faces[socketID] = loadImage(data.profile)
+    }
+  })
 }
