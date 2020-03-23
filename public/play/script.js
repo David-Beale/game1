@@ -27,7 +27,8 @@ async function preload () {
   name = '';
   font = loadFont('./font.otf');
   if (id && pw) {
-    await fetch(`http://localhost:4000/profile/?a=${id}&b=${pw}`)
+    // await fetch(`http://localhost:4000/profile/?a=${id}&b=${pw}`)
+    await fetch(`https://db-game1.herokuapp.com/profile/?a=${id}&b=${pw}`)
       .then(res => res.status < 400 ? res : Promise.reject(res))
       .then(res => {
         return res.json()
@@ -82,8 +83,6 @@ function setup () {
     player.updateRadius();
     if (player.mass < 10000) alive = false;
   });
-  // getPlayerPic(1, "5e74da27df5b9c0fdc2d9994");
-
 }
 function mouseClicked () {
   if (ammo >= 1) {
