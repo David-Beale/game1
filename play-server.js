@@ -3,7 +3,7 @@ const app = express();
 const PORT = process.env.PORT || 4000;
 const path = require('path');
 const mongoose = require('mongoose');
-const User = require('./models/User');
+const User = require(path.join(__dirname, 'Models/User'));
 
 //Serve game
 app.use(express.static(path.join(__dirname, 'public/play')));
