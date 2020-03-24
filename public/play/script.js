@@ -36,7 +36,7 @@ async function preload () {
       .then(data => {
         name = data.name
         dbID = data._id;
-        profileImage = data.profile
+        profileImage = data.avatar
       })
   }
   
@@ -240,7 +240,7 @@ function getPlayerPic (socketID, dbID) {
   })
   .then(data => {
     if (data){
-      faces[socketID] = loadImage(data.profile)
+      faces[socketID] = loadImage(data.avatar)
     }
   })
 }

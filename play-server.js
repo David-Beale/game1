@@ -4,6 +4,8 @@ const PORT = process.env.PORT || 4000;
 const path = require('path');
 const mongoose = require('mongoose');
 const User = require(path.join(__dirname, 'Models/User'));
+require('dotenv').config();
+const { DB_USER, DB_PASS } = process.env;
 
 //Serve game
 app.use(express.static(path.join(__dirname, 'public/play')));
@@ -11,7 +13,7 @@ app.use(express.static(path.join(__dirname, 'public/play')));
 app.get('/profile', async function (req, res) {
   let id = req.query.a;
   let password = req.query.b;
-  let profile = await User.findById(id, '_id name password profile ');
+  let profile = await User.findById(id, '_id name password avatar ');
   if (profile && profile.password === password) {
     res.status(200).send(JSON.stringify(profile))
   } else {
@@ -20,13 +22,14 @@ app.get('/profile', async function (req, res) {
 });
 app.get('/face', async function (req, res) {
   let id = req.query.a;
-  let profile = await User.findById(id,'profile')
+  let profile = await User.findById(id,'avatar')
   res.status(200).send(JSON.stringify(profile))
 });
 //Connect to Mongo
 
 mongoose
-  .connect('mongodb+srv://admin1234:admin1234@newsfeed-ieedc.mongodb.net/test?retryWrites=true&w=majority', { useNewUrlParser: true, useUnifiedTopology: true })
+  // .connect('mongodb+srv://admin1234:admin1234@newsfeed-ieedc.mongodb.net/test?retryWrites=true&w=majority', { useNewUrlParser: true, useUnifiedTopology: true })
+  .connect(`mongodb+srv://${DB_USER}:${DB_PASS}@cluster0-xrruv.mongodb.net/chat-app?retryWrites=true&w=majority`, { useNewUrlParser: true, useUnifiedTopology: true })
   .then(() => console.log('MongoDB Connected...'))
   .catch(e => console.log(e));
 
