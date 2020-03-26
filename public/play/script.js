@@ -39,12 +39,12 @@ async function preload () {
         profileImage = data.avatar
       })
   }
-  
+
 }
 
 function setup () {
   socket = io();
-  
+
   createCanvas(window.innerWidth, window.innerHeight);
   background(39, 43, 48)
   let camera = createVector(0, 0)
@@ -95,7 +95,7 @@ function mouseClicked () {
 }
 
 function draw () {
-  if(profileImage) {
+  if (profileImage) {
     player.face = loadImage(profileImage);
     profileImage = '';
   }
@@ -161,12 +161,12 @@ function renderOtherPlayers () {
         plyr.mass = 0;
         player.updateRadius();
       }
-      if(plyr.dbID && !faces[plyr.id]) {
+      if (plyr.dbID && !faces[plyr.id]) {
         getPlayerPic(plyr.id, plyr.dbID);
-        faces[plyr.id = 'loading']
+        faces[plyr.id] = 'loading'
       }
-      if (faces[plyr.id] && faces[plyr.id] !== 'loading'){
-        image(faces[plyr.id], plyr.x-plyr.r, plyr.y-plyr.r, plyr.r*2, plyr.r*2);
+      if (faces[plyr.id] && faces[plyr.id] !== 'loading') {
+        image(faces[plyr.id], plyr.x - plyr.r, plyr.y - plyr.r, plyr.r * 2, plyr.r * 2);
       } else {
         fill(0, 0, 255);
         circle(plyr.x, plyr.y, plyr.r * 2);
@@ -189,7 +189,7 @@ function renderText (name, size, color, xPos, yPos, offset = 0) {
   text(name, x, y);
 }
 function renderOtherText (name, size, color, xPos, yPos, radius, offset = 0) {
-  let newSF = scaleFactor*(player.radius/radius)
+  let newSF = scaleFactor * (player.radius / radius)
   let x = xPos;
   let y = yPos + offset / newSF;
   let bbox = font.textBounds(name, x, y, size / newSF);
@@ -234,13 +234,13 @@ function getQueryParams (params, url) {
 
 function getPlayerPic (socketID, dbID) {
   fetch(`https://db-game1.herokuapp.com/face/?a=${dbID}`)
-  .then(res => res.status < 400 ? res : Promise.reject(res))
-  .then(res => {
-    return res.json()
-  })
-  .then(data => {
-    if (data){
-      faces[socketID] = loadImage(data.avatar)
-    }
-  })
+    .then(res => res.status < 400 ? res : Promise.reject(res))
+    .then(res => {
+      return res.json()
+    })
+    .then(data => {
+      if (data) {
+        faces[socketID] = loadImage(data.avatar)
+      }
+    })
 }
