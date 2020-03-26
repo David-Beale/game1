@@ -233,7 +233,7 @@ function getQueryParams (params, url) {
 };
 
 function getPlayerPic (socketID, dbID) {
-  fetch(`http://localhost:4000/face/?a=${dbID}`)
+  fetch(`https://db-game1.herokuapp.com/face/?a=${dbID}`)
   .then(res => res.status < 400 ? res : Promise.reject(res))
   .then(res => {
     return res.json()
