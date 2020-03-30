@@ -1,6 +1,6 @@
 # One Dot To Rule Them All
 ![dot](https://user-images.githubusercontent.com/59053870/77830576-514bc100-7121-11ea-829d-28308c5d86a0.png)
-#### A free for all multiplayer game socket IO to connect with other players. Designed to be accessed via our social gaming app:
+#### A free for all multiplayer game using socket IO to connect with other players. Designed to be accessed via our social gaming app:
 https://github.com/Selerski/vapour-frontend
 
 Inspiratation was taken from the popular game Agario.
