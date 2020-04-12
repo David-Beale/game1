@@ -5,7 +5,7 @@ const path = require('path');
 const mongoose = require('mongoose');
 const User = require(path.join(__dirname, 'Models/User'));
 require('dotenv').config();
-const { DB_USER, DB_PASS } = process.env;
+const { DB_URI } = process.env;
 
 //Serve game
 app.use(express.static(path.join(__dirname, 'public/play')));
@@ -28,8 +28,7 @@ app.get('/face', async function (req, res) {
 //Connect to Mongo
 
 mongoose
-  // .connect('mongodb+srv://admin1234:admin1234@newsfeed-ieedc.mongodb.net/test?retryWrites=true&w=majority', { useNewUrlParser: true, useUnifiedTopology: true })
-  .connect(`mongodb+srv://${DB_USER}:${DB_PASS}@cluster0-xrruv.mongodb.net/chat-app?retryWrites=true&w=majority`, { useNewUrlParser: true, useUnifiedTopology: true })
+  .connect(DB_URI, { useNewUrlParser: true, useUnifiedTopology: true })
   .then(() => console.log('MongoDB Connected...'))
   .catch(e => console.log(e));
 
