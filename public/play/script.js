@@ -165,7 +165,7 @@ function renderOtherPlayers () {
         getPlayerPic(plyr.id, plyr.dbID);
         faces[plyr.id] = 'loading'
       }
-      if (faces[plyr.id] && faces[plyr.id] !== 'loading') {
+      if (faces[plyr.id] && faces[plyr.id] !== 'loading' && faces[plyr.id].width>1) {
         image(faces[plyr.id], plyr.x - plyr.r, plyr.y - plyr.r, plyr.r * 2, plyr.r * 2);
       } else {
         fill(0, 0, 255);
@@ -234,6 +234,7 @@ function getQueryParams (params, url) {
 
 function getPlayerPic (socketID, dbID) {
   fetch(`https://db-game1.herokuapp.com/face/?a=${dbID}`)
+  // fetch(`http://localhost:4000/face/?a=${dbID}`)
     .then(res => res.status < 400 ? res : Promise.reject(res))
     .then(res => {
       return res.json()
